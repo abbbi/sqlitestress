@@ -1,4 +1,4 @@
-== sliqestress ==
+# sliqestress
 
 concurrently write to sqlite database to see how fast you can reach the
 "database-locked" situation.
