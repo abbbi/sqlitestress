@@ -5,16 +5,18 @@ concurrently write to sqlite database to see how fast you can reach the
 
 
 ```
-python3 sqlitestress.py -d test.db -i 2000 -w 10
-Worker: 10
-Every 5th process inserts: 2000 values
-rows: 8717
-rows: 16717
-rows: 24722
-Error during process 28 database is locked
-Error during process 28 database is locked
-Error during process 28 database is locked
-Error during process 28 database is locked
-Error during process 28 database is locked
-Error during process 28 database is locked
+python3 sqlitestress.py -d test.db -i 200 -w 15
+WAL mode as returned by connection: wal
+Worker: 15
+Every 5th process inserts: 200 values
+rows: 400
+rows: 1234
+rows: 2034
+[..]
+rows: 25404
+rows: 26148
+rows: 26948
+Error: database is locked
+Error: database is locked
+Error: database is locked
 ```
