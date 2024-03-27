@@ -150,7 +150,7 @@ def main():
             try:
                 cnt, data, duration, mode = future.result()
                 if args.verbose:
-                    print(f"[{mode}] Operation took: {duration} s")
+                    print(f"[{mode}] operation for thread [{cnt}] took: {duration} s")
             except sqlite3.OperationalError as exc:
                 print(f"Error: {exc}")
             except Exception as exc:
