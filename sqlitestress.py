@@ -89,7 +89,7 @@ def main():
         conn = False
 
         print(f"Worker: {args.worker}")
-        print(f"Inserts every {args.every}th process inserts: {args.inserts} values")
+        print(f"Every {args.every}th process inserts: {args.inserts} values")
         fut = {
             executor.submit(
                 sqlite_doit, cnt, args.dbfile, args.inserts, args.every, args.onlyinsert
