@@ -1,6 +1,6 @@
 """Little util to check how much concurrent writes your hardware
 can handle"""
-
+import time
 import sqlite3
 import concurrent.futures
 import argparse
@@ -59,6 +59,15 @@ parser.add_argument(
     required=False,
     help="do not remove table",
 )
+parser.add_argument(
+    "-v",
+    "--verbose",
+    default=False,
+    action="store_true",
+    required=False,
+    help="be verbose",
+)
+
 
 args = parser.parse_args()
 
@@ -72,15 +81,19 @@ def sqlite_doit(cnt, args):
         isolation_level=None,
         timeout=10,
     )
+    mode = ""
+    start_time = time.time()
     cursor = local_conn.cursor()
     cursor.execute(f"PRAGMA journal_mode={args.wal_mode}")
     if args.busy_timeout != 0:
         cursor.execute(f"pragma busy_timeout={args.busy_timeout}")
 
     if cnt % int(args.every):
+        mode = "write"
         for _ in range(int(args.inserts)):
             cursor.execute("insert into test values('1')")
     else:
+        mode = "read"
         if not args.onlyinsert:
             cursor.execute("select * from test")
 
@@ -88,7 +101,10 @@ def sqlite_doit(cnt, args):
     cursor.close()
     local_conn.close()
 
-    return cnt, ret
+    now_time = time.time()
+    duration = now_time - start_time
+
+    return cnt, ret, duration, mode
 
 
 def main():
@@ -132,9 +148,14 @@ def main():
         }
         for future in concurrent.futures.as_completed(fut):
             try:
-                cnt, data = future.result()
+                cnt, data, duration, mode = future.result()
+                if args.verbose:
+                    print(f"[{mode}] Operation took: {duration} s")
             except sqlite3.OperationalError as exc:
                 print(f"Error: {exc}")
+            except Exception as exc:
+                print("Unhandled exception: {exc}")
+                raise SystemExit(1) from exc
             else:
                 if cnt % 1000:
                     if (len(data)) > 0:
