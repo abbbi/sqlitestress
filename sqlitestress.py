@@ -37,6 +37,14 @@ parser.add_argument(
     help="Wal mode to use, default:  %(default)s)",
 )
 parser.add_argument(
+    "-B",
+    "--busy-timeout",
+    default=0,
+    type=int,
+    required=False,
+    help="Set sqlite busy timeout in milliseconds, default:  %(default)s)",
+)
+parser.add_argument(
     "-c",
     "--cycles",
     default=500,
@@ -66,6 +74,8 @@ def sqlite_doit(cnt, args):
     )
     cursor = local_conn.cursor()
     cursor.execute(f"PRAGMA journal_mode={args.wal_mode}")
+    if args.busy_timeout != 0:
+        cursor.execute(f"pragma busy_timeout={args.busy_timeout}")
 
     if cnt % int(args.every):
         for _ in range(int(args.inserts)):
@@ -96,6 +106,10 @@ def main():
             print(
                 f"Warning: Wal mode {args.wal_mode} requested but Database defaults to: {walmode}"
             )
+        if args.busy_timeout != 0:
+            dbcon.execute(f"pragma busy_timeout={args.busy_timeout}")
+            timeout = dbcon.fetchone()[0]
+            print(f"Set Busy timeout value: {timeout} ms")
         try:
             if args.nodelete is False:
                 dbcon.execute("drop table test")
