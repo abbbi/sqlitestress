@@ -116,13 +116,11 @@ def main():
             ): cnt
             for cnt in range(int(args.cycles))
         }
-        p = 0
         for future in concurrent.futures.as_completed(fut):
-            p += 1
             try:
                 cnt, data = future.result()
-            except Exception as exc:
-                print(f"Error during process {cnt} {exc}")
+            except sqlite3.OperationalError as exc:
+                print(f"Error: {exc}")
             else:
                 if cnt % 1000:
                     if (len(data)) > 0:
