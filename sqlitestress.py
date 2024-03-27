@@ -72,10 +72,10 @@ parser.add_argument(
 args = parser.parse_args()
 
 
-def sqlite_doit(cnt, args):
+def sqlite_doit(cnt, argv):
     """write"""
     local_conn = sqlite3.connect(
-        args.dbfile,
+        argv.dbfile,
         # these two values have great impact on
         # database-locked situations
         isolation_level=None,
@@ -84,17 +84,17 @@ def sqlite_doit(cnt, args):
     mode = ""
     start_time = time.time()
     cursor = local_conn.cursor()
-    cursor.execute(f"PRAGMA journal_mode={args.wal_mode}")
-    if args.busy_timeout != 0:
-        cursor.execute(f"pragma busy_timeout={args.busy_timeout}")
+    cursor.execute(f"PRAGMA journal_mode={argv.wal_mode}")
+    if argv.busy_timeout != 0:
+        cursor.execute(f"pragma busy_timeout={argv.busy_timeout}")
 
-    if cnt % int(args.every):
+    if cnt % int(argv.every):
         mode = "write"
-        for _ in range(int(args.inserts)):
+        for _ in range(int(argv.inserts)):
             cursor.execute("insert into test values('1')")
     else:
         mode = "read"
-        if not args.onlyinsert:
+        if not argv.onlyinsert:
             cursor.execute("select * from test")
 
     ret = cursor.fetchall()
@@ -150,7 +150,7 @@ def main():
             try:
                 cnt, data, duration, mode = future.result()
                 if args.verbose:
-                    print(f"[{mode}] operation for thread [{cnt}] took: {duration} s")
+                    print(f"[{mode}] operation for cycle [{cnt}] took: {duration} s")
             except sqlite3.OperationalError as exc:
                 print(f"Error: {exc}")
             except Exception as exc:
